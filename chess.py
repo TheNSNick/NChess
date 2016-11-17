@@ -122,15 +122,8 @@ def generate_board():
 
 def generate_test_board():
     new_board = {}
-    new_board[(5, 2)] = 'white pawn'
-    new_board[(6, 3)] = 'white pawn'
-    new_board[(6, 5)] = 'white pawn'
-    new_board[(5, 6)] = 'white pawn'
-    new_board[(3, 6)] = 'white pawn'
-    new_board[(2, 5)] = 'white pawn'
-    new_board[(2, 3)] = 'white pawn'
-    new_board[(3, 2)] = 'white pawn'
-    new_board[(4, 4)] = 'white knight'
+    new_board[(3, 2)] = 'white knight'
+    new_board[(4, 4)] = 'white bishop'
     new_board[(7, 7)] = 'white king'
     return new_board
 
@@ -159,21 +152,23 @@ def return_moves(coords, board):
         raise NameError('return_moves(): Invalid coords given.')
     _, move_type = move_piece.split()
     if move_type == 'pawn':
-        return pawn_moves(coords, board)
+        moves = pawn_moves(coords, board)
     elif move_type == 'rook':
-        return rook_moves(coords, board)
+        moves = rook_moves(coords, board)
     elif move_type == 'knight':
-        return knight_moves(coords, board)
-    '''
+        moves = knight_moves(coords, board)
     elif move_type == 'bishop':
-        return bishop_moves(coords, board)
+        moves = bishop_moves(coords, board)
     elif move_type == 'queen':
-        return queen_moves(coords, board)
+        moves = queen_moves(coords, board)
     elif move_type == 'king':
-        return king_moves(coords, board)
+        moves = king_moves(coords, board)
     else:
         raise NameError('return_moves(): Invalid piece type found.')
-    '''
+    for move in moves:
+        if min(move) < 0 or max(move) > 7:
+            moves.remove(move)
+    return moves
 
 
 def pawn_moves(coords, board):
@@ -514,11 +509,138 @@ def knight_moves(coords, board):
     return moves
 
 
-def bishop_moves(player, board):
+def bishop_moves(coords, board):
     moves = []
-    # TO DO !!!
+    move_piece = board[coords]
+    piece_color, _ = move_piece.split()
+    piece_x, piece_y = coords
+    check_worry = False
+    temp_board = board.copy()
+    del temp_board[coords]
+    if is_in_check(piece_color, temp_board):
+        check_worry = True
+    for i in range(min(piece_x, piece_y)):
+        if (piece_x-i-1, piece_y-i-1) not in board.keys():
+            if not check_worry:
+                moves.append((piece_x-i-1, piece_y-i-1))
+            else:
+                temp_board = board.copy()
+                del temp_board[coords]
+                temp_board[(piece_x-i-1, piece_y-i-1)] = move_piece
+                if not is_in_check(piece_color, temp_board):
+                    moves.append((piece_x-i-1, piece_y-i-1))
+        else:
+            other_color, _ = board[(piece_x-i-1, piece_y-i-1)].split()
+            if other_color != piece_color:
+                if not check_worry:
+                    moves.append((piece_x-i-1, piece_y-i-1))
+                else:
+                    temp_board = board.copy()
+                    del temp_board[coords]
+                    temp_board[(piece_x-i-1, piece_y-i-1)] = move_piece
+                    if not is_in_check(piece_color, temp_board):
+                        moves.append((piece_x-i-1, piece_y-i-1))
+            break
+    for i in range(min(7-piece_x, piece_y)):
+        if (piece_x+i+1, piece_y-i-1) not in board.keys():
+            if not check_worry:
+                moves.append((piece_x+i+1, piece_y-i-1))
+            else:
+                temp_board = board.copy()
+                del temp_board[coords]
+                temp_board[(piece_x+i+1, piece_y-i-1)] = move_piece
+                if not is_in_check(piece_color, temp_board):
+                    moves.append((piece_x+i+1, piece_y-i-1))
+        else:
+            other_color, _ = board[(piece_x+i+1, piece_y-i-1)].split()
+            if other_color != piece_color:
+                if not check_worry:
+                    moves.append((piece_x+i+1, piece_y-i-1))
+                else:
+                    temp_board = board.copy()
+                    del temp_board[coords]
+                    temp_board[(piece_x+i+1, piece_y-i-1)] = move_piece
+                    if not is_in_check(piece_color, temp_board):
+                        moves.append((piece_x+i+1, piece_y-i-1))
+            break
+    for i in range(min(7-piece_x, 7-piece_y)):
+        if (piece_x+i+1, piece_y+i+1) not in board.keys():
+            if not check_worry:
+                moves.append((piece_x+i+1, piece_y+i+1))
+            else:
+                temp_board = board.copy()
+                del temp_board[coords]
+                temp_board[(piece_x+i+1, piece_y+i+1)] = move_piece
+                if not is_in_check(piece_color, temp_board):
+                    moves.append((piece_x+i+1, piece_y+i+1))
+        else:
+            other_color, _ = board[(piece_x+i+1, piece_y+i+1)].split()
+            if other_color != piece_color:
+                if not check_worry:
+                    moves.append((piece_x+i+1, piece_y+i+1))
+                else:
+                    temp_board = board.copy()
+                    del temp_board[coords]
+                    temp_board[(piece_x+i+1, piece_y+i+1)] = move_piece
+                    if not is_in_check(piece_color, temp_board):
+                        moves.append((piece_x+i+1, piece_y+i+1))
+            break
+    for i in range(min(piece_x, 7-piece_y)):
+        if (piece_x-i-1, piece_y+i+1) not in board.keys():
+            if not check_worry:
+                moves.append((piece_x-i-1, piece_y+i+1))
+            else:
+                temp_board = board.copy()
+                del temp_board[coords]
+                temp_board[(piece_x-i-1, piece_y+i+1)] = move_piece
+                if not is_in_check(piece_color, temp_board):
+                    moves.append((piece_x-i-1, piece_y+i+1))
+        else:
+            other_color, _ = board[(piece_x-i-1, piece_y+i+1)].split()
+            if other_color != piece_color:
+                if not check_worry:
+                    moves.append((piece_x-i-1, piece_y+i+1))
+                else:
+                    temp_board = board.copy()
+                    del temp_board[coords]
+                    temp_board[(piece_x-i-1, piece_y+i+1)] = move_piece
+                    if not is_in_check(piece_color, temp_board):
+                        moves.append((piece_x-i-1, piece_y+i+1))
+            break
     return moves
 
+
+def queen_moves(coords, board):
+    moves = []
+    moves.extend(rook_moves(coords, board))
+    moves.extend(bishop_moves(coords, board))
+    return moves
+
+
+def king_moves(coords, board):
+    moves = []
+    move_piece = board[coords]
+    piece_color, _ = move_piece.split()
+    piece_x, piece_y = coords
+    for possible_move in [(piece_x-1, piece_y-1), (piece_x, piece_y-1), (piece_x+1, piece_y-1), (piece_x+1, piece_y), (piece_x+1, piece_y+1), (piece_x, piece_y+1), (piece_x-1, piece_y+1), (piece_x-1, piece_y)]:
+        if possible_move not in board.keys():
+            temp_board = board.copy()
+            del temp_board[coords]
+            temp_board[possible_move] = move_piece
+            if not is_in_check(piece_color, temp_board):
+                moves.append(possible_move)
+        else:
+            other_color, _ = board[possible_move].split()
+            if other_color != piece_color:
+                temp_board = board.copy()
+                del temp_board[coords]
+                temp_board[possible_move] = move_piece
+                if not is_in_check(piece_color, temp_board):
+                    moves.append(possible_move)
+    for move in moves:
+        if move[0] < 0 or move[1] < 0 or move[0] > 7 or move[1] > 7:
+            moves.remove(move)
+    return moves
 
 def is_in_check(player, board):
     # find king
