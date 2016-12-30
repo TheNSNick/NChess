@@ -45,6 +45,9 @@ def main():
                     if click_coords == selected_coords:
                         selected_coords = None
                         selected_piece = None
+                    elif click_coords in return_moves(selected_coords, board):
+                        taken = make_move(selected_coords, click_coords, board)
+                        current_player = change_player(current_player)
         # display & clock updating
         draw_tiles(display_surface)
         for coords, piece in board.iteritems():
@@ -58,6 +61,15 @@ def main():
             pygame.display.set_caption('Chess')
         pygame.display.update()
         tick_clock.tick(FPS)
+
+def make_move(from_coords, to_coords, board):
+    move_piece = board[from_coords]
+    taken_piece = None
+    del board[from_coords]
+    if to_coords in board.keys():
+        taken_piece = board[to_coords]
+    board[to_coords] = move_piece
+    return taken_piece
 
 
 def draw_tiles(display):
@@ -85,8 +97,8 @@ def draw_selection_square(display, coords):
     pygame.draw.rect(display, SELECTION_SQUARE_COLOR, draw_rect, SELECTION_SQUARE_WIDTH)
 
 
-def draw_selection_trail(display, coords, board):
-    move_squares = return_moves(coords, board)
+def draw_selection_trail(display, select_coords, board):
+    move_squares = return_moves(select_coords, board)
     if len(move_squares) > 0:
         for square in move_squares:
             image = pygame.Surface((TILE_SIZE, TILE_SIZE))
