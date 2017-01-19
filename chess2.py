@@ -149,8 +149,12 @@ def valid_moves(coords, board, player):
         moves.extend(orthogonal_moves(coords, board, player))
         moves.extend(diagonal_moves(coords, board, player))
     elif piece_type == 'king':
-        # king moves
-        pass
+        moves.extend(king_moves(coords, board, player))
+    moves = list(set(moves))
+    for move in moves:
+        if not is_valid_move(board, player, coords, move):
+            moves.remove(move)
+
     return moves
 
 
@@ -309,6 +313,173 @@ def diagonal_moves(coords, board, player):
                 moves.append((x + i + 1, y + i + 1))
             break
     return moves
+
+
+def king_moves(coords, board, player):
+    moves = []
+    x, y = coords
+    if (x, y - 1) not in board.keys():
+        moves.append((x, y - 1))
+    elif board[(x, y - 1)][0] != player:
+        moves.append((x, y - 1))
+    if (x + 1, y - 1) not in board.keys():
+        moves.append((x + 1, y - 1))
+    elif board[(x + 1, y - 1)][0] != player:
+        moves.append((x + 1, y - 1))
+    if (x + 1, y) not in board.keys():
+        moves.append((x + 1, y))
+    elif board[(x + 1, y)][0] != player:
+        moves.append((x + 1, y))
+    if (x + 1, y + 1) not in board.keys():
+        moves.append((x + 1, y + 1))
+    elif board[(x + 1, y + 1)][0] != player:
+        moves.append((x + 1, y + 1))
+    if (x, y + 1) not in board.keys():
+        moves.append((x, y + 1))
+    elif board[(x, y + 1)][0] != player:
+        moves.append((x, y + 1))
+    if (x - 1, y + 1) not in board.keys():
+        moves.append((x - 1, y + 1))
+    elif board[(x - 1, y + 1)][0] != player:
+        moves.append((x - 1, y + 1))
+    if (x - 1, y) not in board.keys():
+        moves.append((x - 1, y))
+    elif board[(x - 1, y)][0] != player:
+        moves.append((x - 1, y))
+    if (x - 1, y - 1) not in board.keys():
+        moves.append((x - 1, y - 1))
+    elif board[(x - 1, y - 1)][0] != player:
+        moves.append((x - 1, y - 1))
+    return moves
+
+
+def in_check(board, player):
+    king_x, king_y = (None, None)
+    for coords, piece in board.items():
+        if piece[0] == player and piece[1] == 'king':
+            king_x, king_y = coords
+            break
+    if player == 'black':
+        pawn_direction = 1
+    elif player == 'white':
+        pawn_direction = -1
+    # check for pawn checks
+    if (king_x - 1, king_y + pawn_direction) in board.keys():
+        if board[(king_x - 1, king_y + pawn_direction)][0] != player and board[(king_x - 1, king_y + pawn_direction)][1] == 'pawn':
+            return True
+    if (king_x + 1, king_y + pawn_direction) in board.keys():
+        if board[(king_x + 1, king_y + pawn_direction)][0] != player and board[(king_x + 1, king_y + pawn_direction)][1] == 'pawn':
+            return True
+    # check orthogonally
+    for i in range(king_y):
+        if (king_x, king_y - i - 1) in board.keys():
+            if board[(king_x, king_y - i - 1)][0] != player and board[(king_x, king_y - i - 1)][1] == ('rook' or 'queen'):
+                return True
+            elif board[(king_x, king_y - i - 1)][0] == player:
+                break
+    for i in range(7-king_y):
+        if (king_x, king_y + i + 1) in board.keys():
+            if board[(king_x, king_y + i + 1)][0] != player and board[(king_x, king_y + i + 1)][1] == ('rook' or 'queen'):
+                return True
+            elif board[(king_x, king_y + i + 1)][0] == player:
+                break
+    for i in range(king_x):
+        if (king_x - i - 1, king_y) in board.keys():
+            if board[(king_x - i - 1, king_y)][0] != player and board[(king_x - i - 1, king_y)][1] == ('rook' or 'queen'):
+                return True
+            elif board[(king_x - i - 1, king_y)][0] == player:
+                break
+    for i in range(7-king_x):
+        if (king_x + i + 1, king_y) in board.keys():
+            if board[(king_x + i + 1, king_y)][0] != player and board[(king_x + i + 1, king_y)][1] == ('rook' or 'queen'):
+                return True
+            elif board[(king_x + i + 1, king_y)][0] == player:
+                break
+    # check diagonally
+    for i in range(min(king_x, king_y)):
+        if (king_x - i - 1, king_y - i - 1) in board.keys():
+            if board[(king_x - i - 1, king_y - i - 1)][0] != player and (board[(king_x - i - 1, king_y - i - 1)][1] == 'bishop' or board[(king_x - i - 1, king_y - i - 1)][1] == 'queen'):
+                return True
+            elif board[(king_x - i - 1, king_y - i - 1)][0] == player:
+                break
+    for i in range(min(7-king_x, king_y)):
+        if (king_x + i + 1, king_y - i - 1) in board.keys():
+            if board[(king_x + i + 1, king_y - i - 1)][0] != player and board[(king_x + i + 1, king_y - i - 1)][1] == ('bishop' or 'queen'):
+                return True
+            elif board[(king_x + i + 1, king_y - i - 1)][0] == player:
+                break
+    for i in range(min(king_x, 7-king_y)):
+        if (king_x - i - 1, king_y + i + 1) in board.keys():
+            if board[(king_x - i - 1, king_y + i + 1)][0] != player and board[(king_x - i - 1, king_y + i + 1)][1] == ('bishop' or 'queen'):
+                return True
+            elif board[(king_x - i - 1, king_y + i + 1)][0] == player:
+                break
+    for i in range(min(7-king_x, 7-king_y)):
+        if (king_x + i + 1, king_y + i + 1) in board.keys():
+            if board[(king_x + i + 1, king_y + i + 1)][0] != player and board[(king_x + i + 1, king_y + i + 1)][1] == ('bishop' or 'queen'):
+                return True
+            elif board[(king_x + i + 1, king_y + i + 1)][0] == player:
+                break
+    # check knights
+    if (king_x + 1, king_y - 2) in board.keys():
+        if board[(king_x + 1, king_y - 2)][0] != player and board[(king_x + 1, king_y - 2)][1] == 'knight':
+            return True
+    if (king_x + 2, king_y - 1) in board.keys():
+        if board[(king_x + 2, king_y - 1)][0] != player and board[(king_x + 2, king_y - 1)][1] == 'knight':
+            return True
+    if (king_x + 2, king_y + 1) in board.keys():
+        if board[(king_x + 2, king_y + 1)][0] != player and board[(king_x + 2, king_y + 1)][1] == 'knight':
+            return True
+    if (king_x + 1, king_y + 2) in board.keys():
+        if board[(king_x + 1, king_y + 2)][0] != player and board[(king_x + 1, king_y + 2)][1] == 'knight':
+            return True
+    if (king_x - 1, king_y + 2) in board.keys():
+        if board[(king_x - 1, king_y + 2)][0] != player and board[(king_x - 1, king_y + 2)][1] == 'knight':
+            return True
+    if (king_x - 2, king_y + 1) in board.keys():
+        if board[(king_x - 2, king_y + 1)][0] != player and board[(king_x - 2, king_y + 1)][1] == 'knight':
+            return True
+    if (king_x - 2, king_y - 1) in board.keys():
+        if board[(king_x - 2, king_y - 1)][0] != player and board[(king_x - 2, king_y - 1)][1] == 'knight':
+            return True
+    if (king_x - 1, king_y - 2) in board.keys():
+        if board[(king_x - 1, king_y - 2)][0] != player and board[(king_x - 1, king_y - 2)][1] == 'knight':
+            return True
+    # check king
+    if (king_x, king_y - 1) in board.keys():
+        if board[(king_x, king_y - 1)][0] != player and board[(king_x, king_y - 1)][1] == 'king':
+            return True
+    if (king_x + 1, king_y - 1) in board.keys():
+        if board[(king_x + 1, king_y - 1)][0] != player and board[(king_x + 1, king_y - 1)][1] == 'king':
+            return True
+    if (king_x + 1, king_y) in board.keys():
+        if board[(king_x + 1, king_y)][0] != player and board[(king_x + 1, king_y)][1] == 'king':
+            return True
+    if (king_x + 1, king_y + 1) in board.keys():
+        if board[(king_x + 1, king_y + 1)][0] != player and board[(king_x + 1, king_y + 1)][1] == 'king':
+            return True
+    if (king_x, king_y + 1) in board.keys():
+        if board[(king_x, king_y + 1)][0] != player and board[(king_x, king_y + 1)][1] == 'king':
+            return True
+    if (king_x - 1, king_y + 1) in board.keys():
+        if board[(king_x - 1, king_y + 1)][0] != player and board[(king_x - 1, king_y + 1)][1] == 'king':
+            return True
+    if (king_x - 1, king_y) in board.keys():
+        if board[(king_x - 1, king_y)][0] != player and board[(king_x - 1, king_y)][1] == 'king':
+            return True
+    if (king_x - 1, king_y - 1) in board.keys():
+        if board[(king_x - 1, king_y - 1)][0] != player and board[(king_x - 1, king_y - 1)][1] == 'king':
+            return True
+    return False
+
+
+def is_valid_move(board, player, from_coords, to_coords):
+    if min(to_coords) < 0 or max(to_coords) > 7:
+        return False
+    check_board = board.copy()
+    check_board[to_coords] = board[from_coords]
+    del check_board[from_coords]
+    return not in_check(check_board, player)
 
 if __name__ == '__main__':
     main()
