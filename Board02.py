@@ -1,5 +1,5 @@
+import os
 import copy
-import itertools
 import Piece02
 import pygame
 from pygame.locals import *
@@ -45,10 +45,16 @@ class Board:
     def itervalues(self):
         return self.tiles.itervalues()
 
+    def pop(self, key):
+        return self.tiles.pop(key)
+
     def draw(self, display):
         self.draw_squares(display)
         for coords, piece in self.iteritems():
             piece.draw(display, coords[0], coords[1])
+        self.draw_turn_indicator(display)
+        if self.in_check(self.turn):
+            self.draw_check_indicator(display)
         if self.select_coords is not None:
             selection_rect = Rect(self.select_coords[0]*TILE_SIZE, self.select_coords[1]*TILE_SIZE, TILE_SIZE, TILE_SIZE)
             pygame.draw.rect(display, SELECTION_BORDER_COLOR, selection_rect, SELECTION_BORDER_WIDTH)
@@ -68,9 +74,15 @@ class Board:
                 attack_surf.set_alpha(SELECTION_TRAIL_ALPHA)
                 display.blit(attack_surf, attack_rect)
 
-        if self.in_check(self.turn):
-            check_rect = Rect(8*TILE_SIZE, 7*TILE_SIZE/2, SCREEN_WIDTH-8*TILE_SIZE, TILE_SIZE)
-            pygame.draw.rect(display, CHECK_RECT_COLOR, check_rect)
+    def draw_check_indicator(self, display, mate=False):
+        if self.in_mate(self.turn):
+            check_image_file = '{}_check_mate.png'.format(self.turn.lower())
+        else:
+            check_image_file = '{}_check.png'.format(self.turn.lower())
+        check_image = pygame.image.load(os.path.join('gfx', check_image_file)).convert()
+        check_rect = check_image.get_rect()
+        check_rect.topright = (SCREEN_WIDTH, 7*TILE_SIZE/2)
+        display.blit(check_image, check_rect)
 
     def draw_squares(self, display):
         for i in range(8):
@@ -81,6 +93,14 @@ class Board:
                 else:
                     draw_color = BLACK_TILE_COLOR
                 pygame.draw.rect(display, draw_color, draw_rect)
+
+    def draw_turn_indicator(self, display):
+        turn_image_file = '{}_turn.png'.format(self.turn.lower())
+        turn_image = pygame.image.load(os.path.join('gfx', turn_image_file)).convert()
+        turn_rect = turn_image.get_rect()
+        turn_height = {'BLACK': 3*TILE_SIZE, 'WHITE': 9*TILE_SIZE/2}
+        turn_rect.topleft = (8*TILE_SIZE, turn_height[self.turn])
+        display.blit(turn_image, turn_rect)
 
     def closest_diagonal_coords(self, from_x, from_y):
         '''Returns a list of tuples [(coord, piece), (coord, piece), ...] in the order UL, UR, DL, DR'''
@@ -178,13 +198,53 @@ class Board:
                     if isinstance(check_piece, Piece02.Pawn) and (coord[0] - king_x == 1 or coord[0] - king_x == -1):
                         if coord[1] + check_piece.direction() == king_y:
                             return True
+        # check knights
+        knight_moves = [(king_x, king_y),
+                        (king_x, king_y),
+                        (king_x, king_y),
+                        (king_x, king_y),
+                        (king_x, king_y),
+                        (king_x, king_y),
+                        (king_x, king_y),
+                        (king_x, king_y), ]
+        for coord in knight_moves:
+            if coord in self.iterkeys():
+                check_piece = self[coord]
+                if check_piece.color != check_color and isinstance(check_piece, Piece02.Knight):
+                    return True
         return False
 
+    def in_mate(self, check_color):
+        if self.in_check(check_color):
+            available_moves = []
+            for coord, piece in self.iteritems():
+                if piece.color == check_color:
+                    a, m = piece.all_moves(coord[0], coord[1], self)
+                    available_moves.extend(a + m)
+            if len(available_moves) == 0:
+                return True
+        return False
+
+    def next_turn(self):
+        next = {'BLACK': 'WHITE', 'WHITE': 'BLACK'}
+        self.turn = next[self.turn]
+
+    def return_board_copy(self):
+        new_copy = Board()
+        new_copy.tiles = copy.deepcopy(self.tiles)
+        new_copy.turn = copy.copy(self.turn)
+        new_copy.select_coords = copy.copy(self.select_coords)
+        return new_copy
+
     def verify_move(self, from_coords, to_coords):
-        board_copy = copy.deepcopy(self)
-        board_copy.__delitem__(from_coords)
-        board_copy[to_coords] = self[from_coords]
-        if board_copy.in_check(self.turn):
-            return False
-        else:
-            return True
+        hold_piece = None
+        good_move = True
+        if to_coords in self.iterkeys():
+            hold_piece = self.pop(to_coords)
+        self[to_coords] = self.pop(from_coords)
+        if self.in_check(self.turn):
+            good_move = False
+        self[from_coords] = self.pop(to_coords)
+        if hold_piece is not None:
+            self[to_coords] = hold_piece
+        return good_move

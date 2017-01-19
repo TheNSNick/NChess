@@ -107,9 +107,6 @@ class Board:
                 return self.piece_at((x + 1 + i, y + 1 + i))
         return None
 
-    def generate_board(self):
-
-
     def generate_pieces(self):
         pieces = []
         for i in range(8):
