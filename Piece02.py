@@ -46,7 +46,7 @@ class Pawn(Piece):
         if (at_x, at_y + self.direction()) not in board.iterkeys():
             if board.verify_move((at_x, at_y), (at_x, at_y + self.direction())):
                 moves.append((at_x, at_y + self.direction()))
-                if (at_x, at_y + 2 * self.direction()) not in board.iterkeys():
+                if (at_x, at_y + 2 * self.direction()) not in board.iterkeys() and ((self.color == 'BLACK' and at_y == 1) or (self.color == 'WHITE' and at_y == 6)):
                     if board.verify_move((at_x, at_y), (at_x, at_y + 2 * self.direction())):
                         moves.append((at_x, at_y + 2 * self.direction()))
         for diag_coords in board.closest_diagonal_coords(at_x, at_y):
@@ -54,6 +54,14 @@ class Pawn(Piece):
                 if diag_coords[1] - at_y == self.direction() and board[diag_coords].color != self.color:
                     if board.verify_move((at_x, at_y), diag_coords):
                         attacks.append(diag_coords)
+        if (self.color == 'BLACK' and at_y == 2) or (self.color == 'WHITE' and at_y == 5):
+            not_color = {'BLACK': 'WHITE', 'WHITE': 'BLACK'}
+            ep_rank = board.flags[not_color[self.color]]['pawn_jumped']
+            if ep_rank is not None:
+                if ep_rank - at_x == 1 or at_x - ep_rank == 1:
+                    attacks.append((ep_rank, at_y + self.direction()))
+                    if (ep_rank, at_y + self.direction()) in moves:
+                        moves.remove((ep_rank, at_y + self.direction()))
         return attacks, moves
 
     def direction(self):
@@ -301,4 +309,36 @@ class King(Piece):
                 else:
                     if board.verify_move(at_coords, move):
                         moves.append(move)
+        if self.can_castle_left(at_x, at_y, board):
+            moves.append((at_x - 2, at_y))
+        if self.can_castle_right(at_x, at_y, board):
+            moves.append((at_x + 2, at_y))
         return attacks, moves
+
+    def can_castle_left(self, at_x, at_y, board):
+        if board.flags[self.color]['king_moved'] or board.flags[self.color]['left_rook_moved']:
+            return False
+        from_coords = (at_x, at_y)
+        for i in range(3):
+            check_coords = (at_x - i - 1, at_y)
+            if check_coords in board.iterkeys():
+                return False
+            elif i < 2 and not board.verify_move(from_coords, check_coords):
+                return False
+        if board.in_check(self.color):
+            return False
+        return True
+
+    def can_castle_right(self, at_x, at_y, board):
+        if board.flags[self.color]['king_moved'] or board.flags[self.color]['right_rook_moved']:
+            return False
+        from_coords = (at_x, at_y)
+        for i in range(2):
+            check_coords = (at_x + i + 1, at_y)
+            if check_coords in board.iterkeys():
+                return False
+            elif not board.verify_move(from_coords, check_coords):
+                return False
+        if board.in_check(self.color):
+            return False
+        return True

@@ -39,22 +39,56 @@ def main():
                         select_piece = board[board.select_coords]
                         select_x, select_y = board.select_coords
                         if click_coords in select_piece.attacks(select_x, select_y, board):
+                            if not board.flags[board.turn]['king_moved'] and isinstance(select_piece, Piece02.King):
+                                board.flags[board.turn]['king_moved'] = True
+                            if not board.flags[board.turn]['left_rook_moved'] and isinstance(select_piece, Piece02.Rook) and select_x == 0:
+                                board.flags[board.turn]['left_rook_moved'] = True
+                            if not board.flags[board.turn]['right_rook_moved'] and isinstance(select_piece, Piece02.Rook) and select_x == 7:
+                                board.flags[board.turn]['right_rook_moved'] = True
                             move_color = board.turn
                             move_text = move_notation(select_piece, board.select_coords, click_coords, capture=True)
                             board[click_coords] = board.pop(board.select_coords)
                             board.select_coords = None
                             board.next_turn()
                             if board.in_check(board.turn):
-                                move_text += '+'
+                                if board.in_mate(board.turn):
+                                    move_text += '#'
+                                else:
+                                    move_text += '+'
                             moves[move_color].append(move_text)
                         elif click_coords in select_piece.free_moves(select_x, select_y, board):
+                            if not board.flags[board.turn]['king_moved'] and isinstance(select_piece, Piece02.King):
+                                board.flags[board.turn]['king_moved'] = True
+                            if not board.flags[board.turn]['left_rook_moved'] and isinstance(select_piece, Piece02.Rook) and select_x == 0:
+                                board.flags[board.turn]['left_rook_moved'] = True
+                            if not board.flags[board.turn]['right_rook_moved'] and isinstance(select_piece, Piece02.Rook) and select_x == 7:
+                                board.flags[board.turn]['right_rook_moved'] = True
+                            if isinstance(select_piece, Piece02.Pawn) and (click_y - select_y == 2 or select_y - click_y == 2):
+                                board.flags[board.turn]['pawn_jumped'] = click_x
+                            else:
+                                board.flags[board.turn]['pawn_jumped'] = None
                             move_color = board.turn
                             move_text = move_notation(select_piece, board.select_coords, click_coords)
                             board[click_coords] = board.pop(board.select_coords)
+                            if isinstance(select_piece, Piece02.King) and (click_x - select_x == 2 or select_x - click_x == 2):
+                                if click_x == 2:
+                                    rook_from = (0, click_y)
+                                    rook_to = (3, click_y)
+                                elif click_x == 6:
+                                    rook_from = (7, click_y)
+                                    rook_to = (5, click_y)
+                                board[rook_to] = board.pop(rook_from)
                             board.select_coords = None
                             board.next_turn()
                             if board.in_check(board.turn):
-                                move_text += '+'
+                                if board.in_mate(board.turn):
+                                    move_text += '#'
+                                else:
+                                    move_text += '+'
+                            if 'Kg' in move_text:
+                                move_text = '0-0'
+                            elif 'Kc' in move_text:
+                                move_text = '0-0-0'
                             moves[move_color].append(move_text)
                 else:
                     if click_coords in board.iterkeys():

@@ -23,6 +23,17 @@ class Board:
         self.tiles = self.generate_board()
         self.turn = 'WHITE'
         self.select_coords = None
+        self.flags = {'BLACK': {'left_rook_moved': False,
+                                'right_rook_moved': False,
+                                'king_moved': False,
+                                'pawn_jumped': None
+                                },
+                      'WHITE': {'left_rook_moved': False,
+                                'right_rook_moved': False,
+                                'king_moved': False,
+                                'pawn_jumped': None
+                                }
+                      }
 
     def __delitem__(self, key):
         self.tiles.__delitem__(key)
@@ -198,6 +209,9 @@ class Board:
                     if isinstance(check_piece, Piece02.Pawn) and (coord[0] - king_x == 1 or coord[0] - king_x == -1):
                         if coord[1] + check_piece.direction() == king_y:
                             return True
+                    if isinstance(check_piece, Piece02.King):
+                        if -1 <= king_x - coord[0] <= 1 and -1 <= king_y - coord[1] <= 1:
+                            return True
         # check knights
         knight_moves = [(king_x, king_y),
                         (king_x, king_y),
@@ -224,6 +238,10 @@ class Board:
             if len(available_moves) == 0:
                 return True
         return False
+
+    def make_move(self, from_coords, to_coords):
+        pass
+        # TODO
 
     def next_turn(self):
         next = {'BLACK': 'WHITE', 'WHITE': 'BLACK'}
