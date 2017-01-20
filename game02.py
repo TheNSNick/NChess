@@ -1,4 +1,6 @@
+import os
 import sys
+from datetime import datetime
 import pygame
 from pygame.locals import *
 import Board02
@@ -45,6 +47,10 @@ def main():
                                 board.flags[board.turn]['left_rook_moved'] = True
                             if not board.flags[board.turn]['right_rook_moved'] and isinstance(select_piece, Piece02.Rook) and select_x == 7:
                                 board.flags[board.turn]['right_rook_moved'] = True
+                            if isinstance(select_piece, Piece02.Pawn) and click_coords not in board.iterkeys():
+                                # en passant take -- remove Pawn jumped behind
+                                if (click_x, click_y - select_piece.direction()) in board.iterkeys():
+                                    _ = board.pop((click_x, click_y - select_piece.direction()))
                             move_color = board.turn
                             move_text = move_notation(select_piece, board.select_coords, click_coords, capture=True)
                             board[click_coords] = board.pop(board.select_coords)
@@ -94,6 +100,13 @@ def main():
                     if click_coords in board.iterkeys():
                         if board[click_coords].color == board.turn:
                             board.select_coords = click_coords
+            if event.type == KEYDOWN:
+                if event.key == K_RETURN or event.key == K_KP_ENTER:
+                    if board.in_mate(board.turn):
+                        save_game(moves)
+                        board = Board02.Board()
+                        moves = {'BLACK': [], 'WHITE': []}
+
         # drawing
         screen.fill(BACKGROUND_COLOR)
         board.draw(screen)
@@ -172,6 +185,20 @@ def notation_tile_name(coords):
 def render_text(text, color):
     m_font = pygame.font.SysFont('arial', MOVE_TEXT_SIZE)
     return m_font.render(text, False, COLORS[color])
+
+
+def save_game(move_dict):
+    file_name = str(datetime.now())
+    for char in ' .-:':
+        file_name = file_name.replace(char, '')
+    print 'Saving to: {}'.format(file_name)
+    file_path = os.path.join('games', file_name)
+    with open(file_path, 'w') as write_file:
+        move_num = 1
+        for white, black in zip(move_dict['WHITE'], move_dict['BLACK']):
+            line = '{}.\t{}\t{}\n'.format(move_num, white, black)
+            write_file.write(line)
+            move_num += 1
 
 if __name__ == '__main__':
     main()

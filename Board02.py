@@ -26,12 +26,14 @@ class Board:
         self.flags = {'BLACK': {'left_rook_moved': False,
                                 'right_rook_moved': False,
                                 'king_moved': False,
-                                'pawn_jumped': None
+                                'pawn_jumped': None,
+                                'en_passant': False
                                 },
                       'WHITE': {'left_rook_moved': False,
                                 'right_rook_moved': False,
                                 'king_moved': False,
-                                'pawn_jumped': None
+                                'pawn_jumped': None,
+                                'en_passant': False
                                 }
                       }
 

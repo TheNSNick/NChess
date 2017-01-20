@@ -54,7 +54,7 @@ class Pawn(Piece):
                 if diag_coords[1] - at_y == self.direction() and board[diag_coords].color != self.color:
                     if board.verify_move((at_x, at_y), diag_coords):
                         attacks.append(diag_coords)
-        if (self.color == 'BLACK' and at_y == 2) or (self.color == 'WHITE' and at_y == 5):
+        if (self.color == 'BLACK' and at_y == 4) or (self.color == 'WHITE' and at_y == 3):
             not_color = {'BLACK': 'WHITE', 'WHITE': 'BLACK'}
             ep_rank = board.flags[not_color[self.color]]['pawn_jumped']
             if ep_rank is not None:
