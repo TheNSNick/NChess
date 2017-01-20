@@ -215,14 +215,14 @@ class Board:
                         if -1 <= king_x - coord[0] <= 1 and -1 <= king_y - coord[1] <= 1:
                             return True
         # check knights
-        knight_moves = [(king_x, king_y),
-                        (king_x, king_y),
-                        (king_x, king_y),
-                        (king_x, king_y),
-                        (king_x, king_y),
-                        (king_x, king_y),
-                        (king_x, king_y),
-                        (king_x, king_y), ]
+        knight_moves = [(king_x - 2, king_y - 1),
+                        (king_x - 1, king_y - 2),
+                        (king_x + 1, king_y - 2),
+                        (king_x + 2, king_y - 1),
+                        (king_x + 2, king_y + 1),
+                        (king_x + 1, king_y + 2),
+                        (king_x - 1, king_y + 2),
+                        (king_x - 2, king_y + 1), ]
         for coord in knight_moves:
             if coord in self.iterkeys():
                 check_piece = self[coord]

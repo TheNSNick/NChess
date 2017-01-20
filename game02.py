@@ -191,14 +191,16 @@ def save_game(move_dict):
     file_name = str(datetime.now())
     for char in ' .-:':
         file_name = file_name.replace(char, '')
-    print 'Saving to: {}'.format(file_name)
-    file_path = os.path.join('games', file_name)
+    file_path = os.path.join('games', '{}.txt'.format(file_name))
     with open(file_path, 'w') as write_file:
         move_num = 1
         for white, black in zip(move_dict['WHITE'], move_dict['BLACK']):
             line = '{}.\t{}\t{}\n'.format(move_num, white, black)
             write_file.write(line)
             move_num += 1
+        if len(move_dict['WHITE']) > len(move_dict['BLACK']):
+            line = '{}.\t{}\n'.format(move_dict['WHITE'][-1])
+            write_file.write(line)
 
 if __name__ == '__main__':
     main()
