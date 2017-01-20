@@ -7,6 +7,7 @@ from pygame.locals import *
 # constants
 SCREEN_WIDTH = 800
 TILE_SIZE = 75
+BACKGROUND_COLOR = (128, 128, 128)
 BLACK_TILE_COLOR = (85, 85, 85)
 WHITE_TILE_COLOR = (170, 170, 170)
 SELECTION_BORDER_COLOR = (200, 200, 0)
@@ -27,13 +28,13 @@ class Board:
                                 'right_rook_moved': False,
                                 'king_moved': False,
                                 'pawn_jumped': None,
-                                'en_passant': False
+                                'en_passant': False,
                                 },
                       'WHITE': {'left_rook_moved': False,
                                 'right_rook_moved': False,
                                 'king_moved': False,
                                 'pawn_jumped': None,
-                                'en_passant': False
+                                'en_passant': False,
                                 }
                       }
 
@@ -96,6 +97,26 @@ class Board:
         check_rect = check_image.get_rect()
         check_rect.topright = (SCREEN_WIDTH, 7*TILE_SIZE/2)
         display.blit(check_image, check_rect)
+
+    def draw_pawn_promotion(self, display, promote_color):
+        promote_surface = pygame.Surface((3 * TILE_SIZE, 3 * TILE_SIZE))
+        promote_surface.fill(BACKGROUND_COLOR)
+        file_suffixes = ['_rook.png', '_knight.png', '_bishop.png', '_queen.png']
+        for i, suffix in enumerate(file_suffixes):
+            file_name = os.path.join('gfx', '{}{}'.format(promote_color.lower(), suffix))
+            piece_image = pygame.image.load(file_name).convert()
+            piece_image.set_colorkey(Piece02.IMAGE_ALPHA)
+            piece_rect = piece_image.get_rect()
+            if i % 2 == 0:
+                piece_rect.centerx = 5 * TILE_SIZE / 6
+            else:
+                piece_rect.centerx = 13 * TILE_SIZE / 6
+            if i < 2:
+                piece_rect.centery = 5 * TILE_SIZE / 6
+            else:
+                piece_rect.centery = 13 * TILE_SIZE / 6
+            promote_surface.blit(piece_image, piece_rect)
+        display.blit(promote_surface, (5 * TILE_SIZE / 2, 5 * TILE_SIZE / 2))
 
     def draw_squares(self, display):
         for i in range(8):
