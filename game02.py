@@ -32,6 +32,14 @@ def main():
                 sys.exit()
             if event.type == MOUSEBUTTONDOWN:
                 click_board(screen, board, moves, event.pos, clock)
+            if event.type == KEYDOWN:
+                if event.key == K_RETURN or event.key == K_KP_ENTER:
+                    if board.is_mate(board.turn):
+                        save_game(moves)
+                        board = Board02.Board()
+                        moves = {'BLACK': [], 'WHITE': []}
+                elif event.key == K_ESCAPE:
+                    save_game(moves)
         # drawing
         screen.fill(BACKGROUND_COLOR)
         board.draw(screen)
@@ -74,23 +82,6 @@ def draw_moves(display, move_dict):
         move_surf = render_text(move_text, 'WHITE')
         display.blit(move_surf, (move_x, move_y))
 
-'''
-def draw_pawn_promotion(display, promote_color):
-    promote_surface = pygame.Surface((3 * TILE_SIZE, 3 * TILE_SIZE))
-    promote_surface.fill(BACKGROUND_COLOR)
-    file_suffixes = ['_rook.png', '_knight.png', '_bishop.png', '_queen.png']
-    for i, suffix in enumerate(file_suffixes):
-        file_name = os.path.join('gfx', '{}{}'.format(promote_color.lower(), suffix))
-        piece_image = pygame.image.load(file_name).convert()
-        piece_rect = piece_image.get_rect()
-        piece_rect.centerx = ((i % 2) + 1) * (TILE_SIZE + TILE_SIZE / 3)
-        if i < 2:
-            piece_rect.centery = TILE_SIZE + TILE_SIZE / 3
-        else:
-            piece_rect.centery = 2 * (TILE_SIZE + TILE_SIZE / 3)
-        promote_surface.blit(piece_image, piece_rect)
-    display.blit(promote_surface, (5 * TILE_SIZE / 2, 5 * TILE_SIZE / 2))
-'''
 
 def click_board(display, board, moves, click_coords, clock):
                 click_x = click_coords[0] / TILE_SIZE
