@@ -34,7 +34,7 @@ def main():
                 click_board(screen, board, moves, event.pos, clock)
             if event.type == KEYDOWN:
                 if event.key == K_RETURN or event.key == K_KP_ENTER:
-                    if board.is_mate(board.turn):
+                    if board.in_mate(board.turn):
                         save_game(moves)
                         board = Board02.Board()
                         moves = {'BLACK': [], 'WHITE': []}
@@ -258,11 +258,11 @@ def save_game(move_dict):
     with open(file_path, 'w') as write_file:
         move_num = 1
         for white, black in zip(move_dict['WHITE'], move_dict['BLACK']):
-            line = '{}.\t{}\t{}\n'.format(move_num, white, black)
+            line = '{}.\t\t{}\t\t{}\n'.format(move_num, white, black)
             write_file.write(line)
             move_num += 1
         if len(move_dict['WHITE']) > len(move_dict['BLACK']):
-            line = '{}.\t{}\n'.format(move_dict['WHITE'][-1])
+            line = '{}.\t\t{}\n'.format(move_num, move_dict['WHITE'][-1])
             write_file.write(line)
 
 if __name__ == '__main__':

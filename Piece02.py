@@ -36,7 +36,7 @@ class Pawn(Piece):
 
     def __init__(self, color):
         Piece.__init__(self, color)
-        file_name = '{}_pawn.png'.format(self.color.lower())
+        file_name = '{}_pawn_piece.png'.format(self.color.lower())
         self.image = pygame.image.load(os.path.join('gfx', file_name)).convert()
         self.image.set_colorkey(IMAGE_ALPHA)
 
