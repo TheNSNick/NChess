@@ -24,7 +24,7 @@ def print_moves_and_attacks(coords, pieces_dict):
     for move in moves:
         print move
     print '({})'.format(len(moves))
-    print 'The {} at coords {} can attack at:'.format(pieces_dict[coords], coords)
+    print 'The {} at {} can attack at:'.format(pieces_dict[coords], chess.convert_coords_to_notation(coords))
     for attack in attacks:
         print attack
     print '({})'.format(len(attacks))
