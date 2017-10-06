@@ -1,6 +1,9 @@
 import chess
 
 
+# TODO: make some test boards
+
+
 def print_board(board):
     horizontal_separator = '-----------------------------------------'
     for y in range(8):

@@ -1,3 +1,6 @@
+import copy
+
+
 class GameState:
 
     colors = ['w', 'b']
@@ -26,21 +29,20 @@ class GameState:
             starting_board[(4, rank)] = (color, 'k')
         return starting_board
 
-    def in_check(self, *color):
+    def in_check(self, board, *color):
         if len(color) == 1:
             assert color[0] in GameState.colors, 'in_check: invalid check_color passed'
             check_color = color[0]
         else:
             check_color = self.turn
         all_opposing_attacks = []
-        for coords, piece in self.board.iteritems():
+        for coords, piece in board.iteritems():
             if piece[0] == check_color and piece[1] == 'k':
                 king_coords = (coords[0], coords[1])
             if piece[0] != check_color:
-                _, piece_attacks = self.moves_and_attacks(coords)
+                _, piece_attacks = self.moves_and_attacks(coords, check_mode=True)
                 all_opposing_attacks.extend(piece_attacks)
         return king_coords in all_opposing_attacks
-
 
     def moves_and_attacks_diagonally(self, move_coords):
         move_x, move_y = move_coords
@@ -128,7 +130,7 @@ class GameState:
                 break
         return moves, attacks
 
-    def moves_and_attacks(self, move_coords):
+    def moves_and_attacks(self, move_coords, check_mode=False):
         # returns valid moves from coords (and subset which are attacking moves)
         assert move_coords in self.board.keys(), 'moves_and_attacks: no piece found at {}'.format(move_coords)
         move_color, move_piece = self.board[move_coords]
@@ -186,6 +188,20 @@ class GameState:
                     elif self.board[king_move][0] != move_color:
                         moves.append(king_move)
                         attacks.append(king_move)
-        # TODO: iterate over moves, remove invalid ones, duplicates, and ones that put move_color player in check
-        # TODO: also iterate over attacks after that and remove ones that are no longer in moves
+        moves = list(set(moves))    # remove duplicates
+        attacks = list(set(attacks))
+        for move in moves:
+            if min(move) < 0 or max(move) > 7:
+                moves.remove(move)
+            elif not check_mode:
+                # make move on a copy of the board and see if it puts the player in check
+                check_board = copy.deepcopy(self.board)
+                move_piece = copy.deepcopy(self.board[move_coords])
+                del check_board[move_coords]
+                check_board[move] = move_piece
+                if self.in_check(check_board, move_color):
+                    moves.remove(move)
+        for attack in attacks:
+            if attack not in moves:
+                attacks.remove(attack)
         return moves, attacks
