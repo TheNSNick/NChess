@@ -21,16 +21,23 @@ SELECTION_ATTACK_COLOR = (200, 0, 0)
 SELECTION_SQUARE_WIDTH = 5
 SELECTION_ALPHA = 128
 LABEL_FONT_SIZE = 14
+INTRO_FONT_SIZE = 36
 
 
 class GameState:
 
     def __init__(self):
+        self.state = 'intro'
         self.turn = 'w'
         self.pieces = chess.generate_new_pieces()
         self.selected = None
         self.move_list = []
         self.graveyard = []
+
+    def __eq__(self, other):
+        if self.state == other:
+            return True
+        return False
 
     def change_turn(self):
         if self.turn == 'w':
@@ -39,6 +46,9 @@ class GameState:
             self.turn = 'w'
         else:
             raise ValueError('GameState.change_turn(): self.turn has an invalid value.')
+
+    def set(self, new_state):
+        self.state = new_state
 
 
 def main():
@@ -59,7 +69,10 @@ def main():
         for event in pygame.event.get():
             if event.type == QUIT:
                 terminate()
-            if event.type == MOUSEBUTTONDOWN:
+            if event.type == KEYDOWN:
+                if event.key == K_RETURN or event.key == K_KP_ENTER:
+                    state.set('play')
+            if event.type == MOUSEBUTTONDOWN and state == 'play':
                 click_coords = convert_screen_coords_to_board_coords(event.pos)
                 if click_coords is not None:
                     if state.selected is None:
@@ -87,12 +100,18 @@ def main():
                     draw_attack_square(screen, move)
                 else:
                     draw_move_square(screen, move)
+        # TESTING
+        if state == 'intro':
+            draw_intro(screen)
+        elif state == 'mate':
+            draw_checkmate(screen)
+        else:
+            names = {'w': 'White', 'b': 'Black'}
+            for n in names.keys():
+                if chess.in_checkmate(n, state.pieces):
+                    state.set('mate')
+        # END TESTING
         pygame.display.update()
-        #TESTING
-        if chess.in_check('w', state.pieces):
-            print ('White in check!')
-        elif chess.in_check('b', state.pieces):
-            print ('Black in check!')
         clock.tick(FPS)
 
 
@@ -105,6 +124,29 @@ def convert_screen_coords_to_board_coords(screen_coords):
         board_y = screen_y / TILE_SIZE
         return (board_x, board_y)
     return None
+
+
+def draw_intro(draw_surf):
+    width = SCREEN_WIDTH / 2
+    height = SCREEN_HEIGHT / 2
+    x = (SCREEN_WIDTH - width) / 2
+    y = (SCREEN_HEIGHT - height) / 2
+    pygame.draw.rect(draw_surf, BOARD_BG_COLOR, Rect(x, y, width, height))
+    intro_font = pygame.font.SysFont('timesnewroman', INTRO_FONT_SIZE)
+    small_font = pygame.font.SysFont('timesnewroman', LABEL_FONT_SIZE)
+    intro_surf, intro_rect = render_text('Chess', intro_font)
+    intro_rect.centerx = SCREEN_WIDTH / 2
+    intro_rect.top = y + BORDER_SIZE
+    draw_surf.blit(intro_surf, intro_rect)
+    enter_surf, enter_rect = render_text('Press Enter to continue.', small_font)
+    enter_rect.centerx = SCREEN_WIDTH / 2
+    enter_rect.bottom = y + height - BORDER_SIZE
+    draw_surf.blit(enter_surf, enter_rect)
+
+
+def draw_checkmate(draw_surf):
+    # TODO -- actual checkmate draw (or not -- is it necessary?)
+    pygame.draw.rect(draw_surf, (175, 0, 0), Rect(200, 100, 400, 400))
 
 
 def draw_board(draw_surf, piece_dict, image_dict):
