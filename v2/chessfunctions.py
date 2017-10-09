@@ -86,14 +86,15 @@ def in_check(check_color, piece_dict):
     return False
 
 
-def no_available_moves(move_color, piece_dict):
-    #TODO -- needs testing
-    for coords, piece in piece_dict.iteritems():
-        if piece[0] == move_color:
-            moves = return_moves(coords, piece_dict)
-            if len(moves) > 0:
-                return False
-    return True
+def in_checkmate(check_color, piece_dict):
+    if in_check(check_color, piece_dict):
+        for coords, piece in piece_dict.iteritems():
+            if piece[0] == check_color:
+                moves = return_moves(coords, piece_dict)
+                if len(moves) > 0:
+                    return False
+        return True
+    return False
 
 
 def move_piece(from_coords, to_coords, piece_dict):
