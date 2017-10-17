@@ -50,7 +50,7 @@ def main():
                     else:
                         if click_coords == game.selected:
                             game.selected = None
-                        elif click_coords in chess.available_moves(game.selected, game.board):
+                        elif click_coords in chess.available_moves(game.selected, game):
                             taken_piece = game.make_move(game.selected, click_coords)
                             if taken_piece is not None:
                                 game.taken[taken_piece[0]][taken_piece[1]] += 1
@@ -59,7 +59,7 @@ def main():
         draw_pieces(screen, game.board, piece_images)
         if game.selected is not None:
             draw_tile_outline(screen, game.selected)
-            for possible_move in chess.available_moves(game.selected, game.board):
+            for possible_move in chess.available_moves(game.selected, game):
                 if possible_move in game.board.keys() and game.board[possible_move][0] != game.turn:
                     draw_tile_shading(screen, possible_move, RED)
                 else:
