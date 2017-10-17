@@ -16,6 +16,8 @@ SELECT_BORDER_COLOR = (222, 222, 0)
 SELECT_BORDER_WIDTH = 5
 MOVE_COLOR = (0, 222, 222)
 ATTACK_COLOR = (222, 0, 0)
+MOVE_FONT_SIZE = 16
+MOVE_FONT_NAME = 'timesnewroman'
 
 
 def main():
@@ -44,6 +46,7 @@ def main():
     check_rect = check_indicator.get_rect()
     check_rect.bottomleft = 8 * TILE_SIZE, SCREEN_HEIGHT / 2
     move_list = {'w': [], 'b': []}
+    move_font = pygame.font.SysFont(MOVE_FONT_NAME, MOVE_FONT_SIZE)
     # game loop
     while True:
         for event in pygame.event.get():
@@ -104,18 +107,21 @@ def main():
                     # change turn, deselect coords
                     current_turn = chess_functions.OPPOSITE_COLOR[current_turn]
                     selected_tile_coords = None
-                    # check for checkmate
-                    if chess_functions.in_check(current_turn, game_board):
-                        mate = True
-                        for piece_coords, piece in game_board.iteritems():
-                            piece_color, piece_type = piece
-                            if piece_color == current_turn:
-                                if len(chess_functions.moves_available(piece_coords, game_board, castle_flags[current_turn], pawn_jump=pawn_jump_flag)) > 0:
-                                    mate = False
-                                    break
-                        if mate:
+                    # check for stalemate and checkmate
+                    any_moves = False
+                    for piece_coords, piece in game_board.iteritems():
+                        piece_color, piece_type = piece
+                        if piece_color == current_turn:
+                            if len(chess_functions.moves_available(piece_coords, game_board, castle_flags[current_turn], pawn_jump=pawn_jump_flag)) > 0:
+                                any_moves = True
+                                break
+                    if not any_moves:
+                        if chess_functions.in_check(current_turn, game_board):
                             # TODO -- checkmate()
-                            print 'Checkmate'
+                            print 'Checkmate! {} wins!'.format(chess_functions.OPPOSITE_COLOR[current_turn])
+                        else:
+                            # TODO -- stalemate()
+                            print 'Stalemate. Tie.'
         # draw and update
         screen.fill(GREY)
         draw_board(screen)
@@ -126,6 +132,7 @@ def main():
         taken_sprites.draw(screen)
         if chess_functions.in_check(current_turn, game_board):
             screen.blit(check_indicator, check_rect)
+        draw_move_list(screen, move_list, move_font)
         pygame.display.update()
         game_clock.tick(FPS)
 
@@ -139,6 +146,35 @@ def draw_board(draw_surface):
                 fill_color = BLACK
             fill_rect = Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
             pygame.draw.rect(draw_surface, fill_color, fill_rect)
+
+
+def draw_move_list(draw_surface, move_list, move_font):
+    # TODO (using text_surf_and_rect)
+    move_colors = {'w': BLACK, 'b': WHITE}
+    left_margins = {'w': 9 * TILE_SIZE + 5, 'b': 10 * TILE_SIZE + 5}
+    pygame.draw.rect(draw_surface, WHITE, Rect(TILE_SIZE * 8 + 2 * TILE_SIZE / 3, 0, TILE_SIZE, SCREEN_HEIGHT / 2 - 2 * TILE_SIZE / 3))
+    pygame.draw.rect(draw_surface, BLACK, Rect(TILE_SIZE * 8 + 5 * TILE_SIZE / 3, 0, TILE_SIZE, SCREEN_HEIGHT / 2 - 2 * TILE_SIZE / 3))
+    for color in chess_functions.COLORS:
+        top_y = TILE_SIZE * 3
+        bottom_y = SCREEN_HEIGHT / 2 - 2 * TILE_SIZE / 3
+        center_y = (top_y + bottom_y) / 2
+        if color == 'b' and len(move_list['w']) > len(move_list['b']):
+            center_y -= TILE_SIZE / 3
+        left_x = left_margins[color]
+        num_moves = len(move_list['w'])
+        for move in reversed(move_list[color]):
+            move_surf, move_rect = text_surf_and_rect(move, move_font, move_colors[color])
+            move_rect.left = left_x
+            move_rect.centery = center_y
+            if center_y >= -TILE_SIZE / 3:
+                draw_surface.blit(move_surf, move_rect)
+                if color == 'w':
+                    number_surf, number_rect = text_surf_and_rect(str(num_moves) + '.', move_font, BLACK)
+                    number_rect.left = 8 * TILE_SIZE + 5
+                    number_rect.centery = center_y
+                    draw_surface.blit(number_surf, number_rect)
+                    num_moves -= 1
+            center_y -= TILE_SIZE / 3
 
 
 def draw_selection_border(draw_surface, tile_coords):
@@ -261,6 +297,12 @@ def screen_to_board_coords(screen_coords):
 def terminate():
     pygame.quit()
     sys.exit()
+
+
+def text_surf_and_rect(text, font, color):
+    text_surf = font.render(text, False, color)
+    text_rect = text_surf.get_rect()
+    return text_surf, text_rect
 
 
 if __name__ == '__main__':
