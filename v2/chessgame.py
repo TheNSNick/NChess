@@ -83,14 +83,21 @@ def main():
                         if click_coords == state.selected:
                             state.selected = None
                         else:
-                            #TODO -- en passant and castling
                             if click_coords in chess.return_moves(state.selected, state.pieces):
+                                #TODO -- en passant and castling
                                 if click_coords in state.pieces.keys():
                                     state.graveyard.append(state.pieces.pop(click_coords))
                                 chess.move_piece(state.selected, click_coords, state.pieces)
                                 state.selected = None
                                 # TODO -- checkmate and stalemate
                                 state.change_turn()
+                                if chess.no_available_moves(state.turn, state.pieces):
+                                    if chess.in_check(state.turn, state.pieces):
+                                        print 'Checkmate!'
+                                    else:
+                                        print 'Stalemate.'
+                                elif chess.in_check(state.turn, state.pieces):
+                                    print 'Check!'
         screen.fill(BG_COLOR)
         draw_board(screen, state.pieces, images)
         if state.selected is not None:

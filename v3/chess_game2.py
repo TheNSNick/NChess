@@ -3,6 +3,7 @@ from pygame.locals import *
 import chess_functions
 import os
 import sys
+import datetime
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -79,11 +80,11 @@ def main():
                             castle_flags[current_turn]['king_rook_moved'] = True
                     # make move
                     taken = chess_functions.make_move(selected_tile_coords, click_coords, game_board)
-                    # finish up move notation and store
+                    # finish up move notation, store, and save
                     if chess_functions.in_check(chess_functions.OPPOSITE_COLOR[current_turn], game_board):
                         move_notation += '+'
                     move_list[current_turn].append(move_notation)
-                    print move_notation # TODO -- remove (testing)
+                    save_game_log(move_list)
                     if taken is None:
                         # check for en passant and castling and adjust if needed
                         if piece_type == 'p' and click_coords[0] != selected_tile_coords[0]:
@@ -275,10 +276,10 @@ def pawn_upgrade(draw_surface, clock, upgrade_color, images):
     clock.tick(FPS)
     y_coord = 7 * TILE_SIZE / 2
     click_rects = {
-        'r': Rect(11 * TILE_SIZE / 5, y_coord, TILE_SIZE, TILE_SIZE),
-        'n': Rect(17 * TILE_SIZE / 5, y_coord, TILE_SIZE, TILE_SIZE),
-        'b': Rect(23 * TILE_SIZE / 5, y_coord, TILE_SIZE, TILE_SIZE),
-        'q': Rect(29 * TILE_SIZE / 5, y_coord, TILE_SIZE, TILE_SIZE)
+        'r': Rect(17 * TILE_SIZE / 10, y_coord, TILE_SIZE, TILE_SIZE),
+        'n': Rect(29 * TILE_SIZE / 10, y_coord, TILE_SIZE, TILE_SIZE),
+        'b': Rect(41 * TILE_SIZE / 10, y_coord, TILE_SIZE, TILE_SIZE),
+        'q': Rect(53 * TILE_SIZE / 10, y_coord, TILE_SIZE, TILE_SIZE)
                    }
     while True:
         for event in pygame.event.get():
@@ -288,6 +289,20 @@ def pawn_upgrade(draw_surface, clock, upgrade_color, images):
                 for piece_type, piece_rect in click_rects.iteritems():
                     if piece_rect.collidepoint(event.pos):
                         return piece_type
+
+
+def save_game_log(move_list):
+    with open(os.path.join('game_log', str(datetime.date.today()) + '.txt'), 'w') as save_file:
+        for i in range(len(move_list['w'])):
+            line = ''
+            if i < 9:
+                line += ' '
+            line += '{}.\t'.format(str(i + 1))
+            line += move_list['w'][i]
+            if i < len(move_list['w']) - 1 or len(move_list['w']) == len(move_list['b']):
+                line += '\t{}'.format(move_list['b'][i])
+            line += '\n'
+            save_file.write(line)
 
 
 def screen_to_board_coords(screen_coords):
