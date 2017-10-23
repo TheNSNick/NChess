@@ -1,8 +1,10 @@
-import os
 import copy
-import Piece02
+import os
+
 import pygame
 from pygame.locals import *
+
+import Piece02
 
 # constants
 SCREEN_WIDTH = 800

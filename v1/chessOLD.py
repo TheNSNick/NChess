@@ -1,4 +1,7 @@
-import pygame, sys, os, constants
+import constants
+import os
+import pygame
+import sys
 from pygame.locals import *
 
 
@@ -20,7 +23,7 @@ def main():
                 pygame.quit()
                 sys.exit()
             if event.type == MOUSEBUTTONUP:
-                click_coords = (event.pos[0]/constants.TILE_SIZE, event.pos[1]/constants.TILE_SIZE)
+                click_coords = (event.pos[0] / constants.TILE_SIZE, event.pos[1] / constants.TILE_SIZE)
                 if event.button == 1 and click_coords[0] < 8:
                     if selected_piece is not None:
                         if click_coords in selected_piece:
@@ -49,7 +52,7 @@ def drawBoardTiles(display):
                 tile_color = constants.SQUARE_DARK_COLOR
             else:
                 tile_color = constants.SQUARE_LIGHT_COLOR
-            tile_rect = Rect(i*constants.TILE_SIZE, j*constants.TILE_SIZE, constants.TILE_SIZE, constants.TILE_SIZE)
+            tile_rect = Rect(i * constants.TILE_SIZE, j * constants.TILE_SIZE, constants.TILE_SIZE, constants.TILE_SIZE)
             pygame.draw.rect(display, tile_color, tile_rect)
 
 
@@ -66,16 +69,16 @@ def loadPieceSprite(color, piece):
 def drawPieces(display, black, white):
     for coords, piece in black.iteritems():
         piece_image = loadPieceSprite('black', piece)
-        piece_rect = Rect(coords[0]*constants.TILE_SIZE, coords[1]*constants.TILE_SIZE, constants.TILE_SIZE, constants.TILE_SIZE)
+        piece_rect = Rect(coords[0] * constants.TILE_SIZE, coords[1] * constants.TILE_SIZE, constants.TILE_SIZE, constants.TILE_SIZE)
         display.blit(piece_image, piece_rect)
     for coords, piece in white.iteritems():
         piece_image = loadPieceSprite('white', piece)
-        piece_rect = Rect(coords[0]*constants.TILE_SIZE, coords[1]*constants.TILE_SIZE, constants.TILE_SIZE, constants.TILE_SIZE)
+        piece_rect = Rect(coords[0] * constants.TILE_SIZE, coords[1] * constants.TILE_SIZE, constants.TILE_SIZE, constants.TILE_SIZE)
         display.blit(piece_image, piece_rect)
 
 
 def drawSelectionSquare(display, selected):
-    selection_rect = (selected[0][0]*constants.TILE_SIZE, selected[0][1]*constants.TILE_SIZE, constants.TILE_SIZE, constants.TILE_SIZE)
+    selection_rect = (selected[0][0] * constants.TILE_SIZE, selected[0][1] * constants.TILE_SIZE, constants.TILE_SIZE, constants.TILE_SIZE)
     pygame.draw.rect(display, constants.SELECTION_COLOR, selection_rect, constants.SELECTION_SQUARE_WIDTH)
 
 

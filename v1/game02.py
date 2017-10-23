@@ -1,8 +1,10 @@
 import os
 import sys
 from datetime import datetime
+
 import pygame
 from pygame.locals import *
+
 import Board02
 import Piece02
 

@@ -25,6 +25,7 @@ def main():
     # game initialization
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption('NChess v0.3')
     game_clock = pygame.time.Clock()
     game_board = chess_functions.generate_starting_board()
     piece_images = {'w': {}, 'b': {}}
